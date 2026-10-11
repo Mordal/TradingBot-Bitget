@@ -1,0 +1,128 @@
+# Alle drempels uit Crypto Bot.md. Geheimen staan alleen in .env.
+
+[bot]
+mode = "shadow"            # shadow = geen orders (lokale fill-simulator) | trade = echte orders op de gekozen omgeving
+kill_file = "KILL"
+shadow_start_usdt = 1000.0   # startkapitaal van de simulator (mode=shadow)
+shadow_latency_ms = 300      # gemeten REST-vertraging; de simulator vult pas na deze tijd
+force_model_active = false   # alleen om de keten te testen; nooit op live
+
+[exchange]
+environment = "demo"       # demo | live
+live_confirmed = false     # moet true zijn voor mode=trade op live
+rest_url = "https://api.bitget.com"
+ws_public_url = "wss://ws.bitget.com/v2/ws/public"
+ws_private_live_url = "wss://ws.bitget.com/v2/ws/private"
+ws_private_demo_url = "wss://wspap.bitget.com/v2/ws/private"
+
+[universe]
+quote = "USDT"
+top_n = 20
+refresh_s = 900
+hysteresis_checks = 3
+max_candidates = 60
+min_volume_24h_usdt = 2e6
+max_spread_bps = 8
+min_sd1m_bps = 5
+max_sd1m_bps = 40
+spike_ratio = 3.0
+min_depth_usdt = 5000
+depth_band_bps = 25
+min_history_days = 7
+context_symbols = ["BTCUSDT", "ETHUSDT"]
+exclude_symbols = ["USUSDT", "BTWUSDT", "UMXMUSDT", "DGAIUSDT"]
+exclude_bases = ["USDT", "USDC", "USDE", "FDUSD", "TUSD", "DAI", "USD1", "PYUSD", "EUR", "EURT", "WBTC", "WETH", "STETH", "WSTETH"]
+
+[agents]
+horizons_min = [10, 30, 60, 120]
+edge_max_age_s = 90
+tp_cost_multiple = 2.0
+sl_sigma_multiple = 1.0
+volume_z_min = 2.0
+vol_expansion_min = 1.5
+flow_imbalance_min = 0.2
+flow_window_s = 180
+breakout_window_min = 15
+trail_trigger = 0.5        # trailing stop actief zodra winst >= trail_trigger * TP
+edge_decay_ev_bps = -2.0   # verlaat als de verwachte netto edge (zonder de al betaalde instapkosten) hieronder zakt
+max_hold_factor = 1.0      # tijdslimiet = factor * horizon
+
+[decision]
+min_ev_bps = 5.0
+min_p_win = 0.45
+ev_ref_bps = 15.0
+base_order_usdt = 20.0
+max_order_usdt = 100.0
+slippage_bps = 1.0
+thin_size_factor = 0.5
+decision_interval_ms = 500
+
+[fees]
+maker_bps = 10.0
+taker_bps = 10.0
+
+[risk]
+max_open_positions = 6
+max_position_usdt = 100.0
+max_asset_share = 0.25
+max_total_exposure_pct = 0.6
+min_usdt_reserve = 50.0
+dd_soft = 0.03
+dd_hard = 0.06
+daily_loss_pct = 0.03
+stop_cooldown_s = 900
+max_buys_per_min = 3
+max_buys_per_hour = 30
+max_data_age_ms = 2000
+max_order_depth_fraction = 0.10
+max_slippage_bps = 8.0
+btc_shock_bps = 50.0
+btc_shock_window_s = 300
+max_reject_streak = 3
+capital_usdt = 0.0         # 0 = alle USDT op het account; anders maximaal dit bedrag inzetten
+
+[rate]
+# Gemeten op 11 okt 2026 (python -m tradingbot measure): publieke REST foutvrij tot 20/s (429 bij 40/s),
+# orders (demo) foutvrij tot 10/s (1x 429 bij 20/s), 120 WS-kanalen op 1 verbinding zonder fout.
+# Budgetten staan op 50% van het foutvrije maximum.
+rest_public_per_s = 10.0
+rest_private_per_s = 8.0
+orders_per_s = 5.0
+cancels_per_s = 5.0
+ws_channels_per_connection = 100
+ws_subscribes_per_hour = 200
+backoff_base_s = 0.5
+backoff_max_s = 30.0
+order_timeout_s = 3.0
+
+[model]
+dir = "models"
+history_days = 16
+train_frac = 0.6
+val_frac = 0.2
+purge_min = 120
+min_test_signals = 30
+min_ic = 0.08
+n_estimators = 400
+learning_rate = 0.03
+num_leaves = 15
+min_data_in_leaf = 200
+default_spread_bps = 4.0
+shadow_activate_n = 100
+shadow_activate_hit = 0.52
+shadow_demote_n = 200
+shadow_demote_hit = 0.45
+
+[recorder]
+enabled = true
+dir = "data/recordings"
+flush_s = 60
+books_every_ms = 1000
+
+[health]
+path = "data/health.json"
+interval_s = 10
+alerts = "data/alerts.log"
+
+[storage]
+db = "data/bot.sqlite"
